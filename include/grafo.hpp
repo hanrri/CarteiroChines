@@ -25,7 +25,6 @@ public:
 
     int get_n_vertices() { return n_vertices; }
 
-    // Adiciona aresta não direcionada
     bool adicionar_aresta(int u, int v, int peso = 1) {
         if (u < 1 || u > n_vertices || v < 1 || v > n_vertices) return false;
         adj[u].push_back({v, peso});
@@ -33,7 +32,6 @@ public:
         return true;
     }
 
-    // Identifica vértices ímpares para o PCC
     vector<int> get_vertices_impares() {
         vector<int> impares;
         for (int i = 1; i <= n_vertices; i++) {
@@ -42,7 +40,6 @@ public:
         return impares;
     }
 
-    // Dijkstra essencial para calcular distâncias entre ímpares
     void dijkstra(int origem, vector<int>& dist, vector<int>& pai) {
         dist.assign(n_vertices + 1, INF);
         pai.assign(n_vertices + 1, -1);
@@ -72,7 +69,6 @@ public:
         return 1;
     }
 
-    // Hierholzer modificado
     void excluir_aresta(int u, int v, int peso_alvo) {
         for (auto it = adj[u].begin(); it != adj[u].end(); ++it) {
             if (it->first == v && it->second == peso_alvo) {
