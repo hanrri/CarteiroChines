@@ -1,0 +1,26 @@
+[
+  {
+    "n_vertices": 50,
+    "tempo_medio_ms": 0.401022
+  },
+  {
+    "n_vertices": 100,
+    "tempo_medio_ms": 1.77679
+  },
+  {
+    "n_vertices": 500,
+    "tempo_medio_ms": 55.6605
+  },
+  {
+    "n_vertices": 1000,
+    "tempo_medio_ms": 247.355
+  },
+  {
+    "n_vertices": 5000,
+    "tempo_medio_ms": 5705.28
+  },
+  {
+    "n_vertices": 10000,
+    "tempo_medio_ms": 24271
+  }
+]
