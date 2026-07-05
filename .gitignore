@@ -6,3 +6,4 @@ main
 programa
 *.o
 *.out
+__pycache__

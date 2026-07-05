@@ -1,0 +1,5 @@
+{
+    "vasco": {"x_values": [10, 20, 30], "y_values": [1000, 2000, 3000]},
+    "flamengo": {"x_values": [10, 20, 30], "y_values": [500, 1500, 2500]},
+    "palmeiras": {"x_values": [10, 20, 30], "y_values": [1250, 2250, 3250]}
+}
