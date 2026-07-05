@@ -1,157 +1,78 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
 #include <fstream>
-//inclui a biblioteca de grafos capada
-#include "../include/grafo.hpp"
+#include <ctime>
+#include "../headers/Grafos.hpp"
+#include "../headers/Heuristicas.hpp" 
 
 using namespace std;
 
 #define endl '\n'
 
-int main(){
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-
-    //prepara para a contagem do tempo
+int main() {
     srand(time(NULL));
 
-    vector<int> tamanhos_gulosos={50, 100, 500, 1000, 5000, 10000};
-    //já começam a demorar muito
-    //50000, 100000
+    ofstream json_greedy("../results/Greedy Results.json");
+    ofstream json_nn("../results/Nearest_Neighbor Results.json");
 
-    //início do json
-    ofstream arquivo_json("estatisticas_gulosas.json");
-    arquivo_json << "[\n";
+    json_greedy << "[\n"; json_nn << "[\n";
     bool primeiro_registro = true;
 
-    //cria os vertores fora dos laços para economizar memória
-    vector<int> dist; //vetor de distância para o dijkstra
-    vector<int> pai; //vetor de pais
-    vector<pair<int, pair<int, int>>> arestas_virtuais; //vetor de arestas virtuais para os pares de vértices ímpares
-    vector<bool> pareados; //vetor de verificação dos vértices ímpares(se eles já foram "pareados")
-    
-    //testes gulosos la eleeee
-    for(auto n:tamanhos_gulosos){ //percorre o vetor com os números de vértices que definimos antes
-        double soma_tempo=0; //lógica de tempo
+    for (auto n : Testes_Heu) {
+        vector<double> tempos_greedy(10), tempos_nn(10);
+        vector<int> custos_greedy(10), custos_nn(10);
 
-        //laço para as 10 iterações(para calcular a média no final)
-        for(int i=0; i<10; i++){
-            Grafo g(n); //cria o grafo
-            g.gerar_grafo_aleatorio(n, n*2); //geramos as arestas(aleatoriamente)
+        for (int i = 0; i < 10; i++) {
+            // Gera o grafo único na main
+            Grafo g_original(n, "grafo_aleatorio", false, true); 
+            int peso_original = g_original.gerar_grafo_aleatorio(n, n * 2);
 
-            auto inicio=chrono::high_resolution_clock::now(); //lógica de tempo
+            auto [tempo_g, custo_g] = Greedy(g_original);
+            tempos_greedy[i] = tempo_g;
+            custos_greedy[i] = peso_original+custo_g;
 
-            //pegamos o vetor de vértices de grau ímpar
-            vector<int> vertices_impares = g.get_vertices_impares();
-
-            //se o vertices_impares não estiver vazio, o grafo não é euleriano, segue a lógica(se ele for, fds)
-            if(!vertices_impares.empty()){
-                //guardamos o número de vértices em uma variável para facilitar as coisas
-                int num_vertices = g.get_n_vertices()+1;
-                
-                //zera os vetores criados como preparação para cada iteração
-                dist.assign(num_vertices, 0);
-                pai.assign(num_vertices, 0);
-                pareados.assign(num_vertices, false);
-                arestas_virtuais.clear();
-
-                //lógica para estimar a quantidade de arestas virtuais e reservar espaço no vetor arestas_virtuais
-                //quantidade de vértices ímpares no nosso grafo
-                long long k=vertices_impares.size();
-                //combinação dois a dois entre eles
-                arestas_virtuais.reserve((k*(k-1))/2);
-
-                //calculamos os possíveis caminhos a cada par de vértices ímpares
-                for(auto it:vertices_impares){
-                    //usamos o dijkstra para preenchermos os vetores dist e pai, para cada vértice ímpar,
-                    //pegamos o menor caminho até cada outro vértice ímpar
-                    g.dijkstra(it, dist, pai);
-                    //percorremos o vetor de vértices ímpares para preenchermos o vetor de arestas virtuais
-                    for(auto itt:vertices_impares){
-                        //só vamos formar o par com it, se itt for maior, isso evita calcular um mesmo par duaa vezes e formar
-                        //um par de um vértice com ele mesmo
-                        if(it<itt){
-                            //finalmente formamos o par e atualizamos nosso vetor de arestas virtuais
-                            arestas_virtuais.push_back({dist[itt], {it, itt}});
-                        }
-                    }
-                }
-        
-                //ordenamos as arestas virtuais da "mais leve" para a "mais pesada", para conseguirmos a melhor solução
-                sort(arestas_virtuais.begin(), arestas_virtuais.end());
-                
-                //vamos percorrer o vetor de arestas virtuais para coletarmos todos esses melhores caminhos pareando os
-                //os vértices, ou seja, formando nossos pares
-                for(auto it:arestas_virtuais){
-                    //vamos olhar para os dois vértices do par da vez, se ambos não tiverem sido pareados ainda, pareamos ele,
-                    //caso contrário, vamos para o próximo par
-                    if(pareados[it.second.first] == false && pareados[it.second.second] == false){
-                        pareados[it.second.first] = true;
-                        pareados[it.second.second] = true;
-                
-                        //esse dijkstra vai recuperar o caminho entre o par.
-                        //note que rodamos várias vezes esse algoritmo quando fomos calular todos os pares, logo nosso vetor
-                        //pai foi reescrito muitas vezes para cada vértice, então precisamos reculcular esse caminho
-                        g.dijkstra(it.second.first, dist, pai);
-        
-                        //aqui finalmente iremos duplicar as arestas que compõe esse caminho do par
-                        //começamos do destino(já que nosso caminho vem ao contrário)
-                        int atual=it.second.second;
-                        //percorremos o caminho até encontrarmos o início
-                        while(atual!=it.second.first){
-                            //consultamos no vetor pai para saber de onde vimos para chegar no vértice atual
-                            int anterior=pai[atual];
-                            //obtemos o valor do peso dessa aresta
-                            int peso_real = g.get_peso(anterior, atual);
-                            //com os dois vértices e o peso, estamos prontos para duplicar a aresta e retroceder o caminho
-                            //mais um vértice até chegar no início
-                            g.adicionar_aresta(anterior, atual, peso_real);
-                            //voltamos um vértice
-                            atual=anterior;
-                        }
-                    }
-                }
-            }
-
-            //não incluir o hierholzer no cálculo do tempo? não sei aí como que fica
-            vector<int> ciclo = g.extrair_ciclo_euleriano(1);
-            reverse(ciclo.begin(), ciclo.end());
-            
-            //lógica de tempo
-            auto fim = chrono::high_resolution_clock::now();
-            chrono::duration<double, milli> tempo = fim-inicio;
-            soma_tempo+=tempo.count();
-            
+            auto [tempo_nn, custo_nn] = Nearest_Neighbor(g_original);
+            tempos_nn[i] = tempo_nn;
+            custos_nn[i] = peso_original + custo_nn;
         }
 
-        //output no terminal para verificação rápida dos resultados, desnecessária na versão final
-        double tempo_medio = soma_tempo/10.0;
-        cout<<"N = "<<n<<" | Tempo Medio: "<<tempo_medio<<" ms"<<endl;
+	//Escrita no Json Greedy
 
-        //organização do json
-        //OBS: criei com o gemini, não sei como é preferido a organização dos dados, tem que ver
-        //com os cara lá
-        if(!primeiro_registro) arquivo_json << ",\n";
-        arquivo_json << "  {\n";
-        arquivo_json << "    \"n_vertices\": " << n << ",\n";
-        arquivo_json << "    \"tempo_medio_ms\": " << tempo_medio << "\n";
-        arquivo_json << "  }";
+       if (!primeiro_registro) json_greedy << ",\n";
+        json_greedy << "  {\n";
+        json_greedy << "    \"n_vertices\": " << n << ",\n";
+        json_greedy << "    \"tempos_ms\": [";
+        for (size_t j = 0; j < tempos_greedy.size(); j++) {
+            json_greedy << tempos_greedy[j] << (j < tempos_greedy.size() - 1 ? ", " : "");
+        }
+        json_greedy << "],\n";
+        json_greedy << "    \"custos_ciclo\": [";
+        for (size_t j = 0; j < custos_greedy.size(); j++) {
+            json_greedy << custos_greedy[j] << (j < custos_greedy.size() - 1 ? ", " : "");
+        }
+        json_greedy << "]\n  }";
+
+        //Escrita no Json Nearest Neighbor
+        if (!primeiro_registro) json_nn << ",\n";
+        json_nn << "  {\n";
+        json_nn << "    \"n_vertices\": " << n << ",\n";
+        json_nn << "    \"tempos_ms\": [";
+        for (size_t j = 0; j < tempos_nn.size(); j++) {
+            json_nn << tempos_nn[j] << (j < tempos_nn.size() - 1 ? ", " : "");
+        }
+        json_nn << "],\n";
+        json_nn << "    \"custos_ciclo\": [";
+        for (size_t j = 0; j < custos_nn.size(); j++) {
+	    json_nn << custos_nn[j] << (j < custos_nn.size() - 1 ? ", " : "");
+        }
+        json_nn << "]\n  }";
+
         primeiro_registro = false;
-        
-        //limite de tempo q o gemesson disse, ver oq acontece com isso
-        /*
-        if(tempo_medio>600000){
-            cout<<"Passou de 10 minutos. Abortado!!!"<<endl;
-            break;
-        }
-        */
     }
 
-    //finaliza o json ao final de todas as iterações de todos os grafos
-    arquivo_json << "\n]\n";
-    arquivo_json.close();
+    json_greedy << "\n]\n"; json_nn << "\n]\n";
+    json_greedy.close(); json_nn.close();
 
-    //output de confirmação da criação de json,  talvez desnecessário na versão final
-    cout << "estatística_gulosas.json gerado." << endl;
-
+    cout << "Arquivos com tempos e custos gerados!" << endl;
     return 0;
-}
+} 
