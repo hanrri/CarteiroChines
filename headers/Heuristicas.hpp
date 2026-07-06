@@ -1,9 +1,10 @@
 #pragma once
 #include <bits/stdc++.h>
 #include "Grafos.hpp"
+using namespace std;
 
-inline const std::vector<int> Testes_Heu = {50, 100, 150};
-inline const std::vector<int> Testes_Enum = {50, 100, 150};
+inline const int MaxImpar = 20;
 
 std::pair<double, int> Greedy(Grafo g);
 std::pair<double, int> Nearest_Neighbor(Grafo g);
+std::pair<double, int> Enumeration(Grafo g);

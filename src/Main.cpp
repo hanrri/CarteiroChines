@@ -19,7 +19,7 @@ int main() {
     json_greedy << "[\n"; json_nn << "[\n";
     bool primeiro_registro = true;
 
-    for (auto n : Testes_Heu) {
+    for (int n = 25; n <= 1e5; n+=25) {
         vector<double> tempos_greedy(10), tempos_nn(10);
         vector<int> custos_greedy(10), custos_nn(10);
 
@@ -28,7 +28,11 @@ int main() {
             Grafo g_original(n, "grafo_aleatorio", false, true); 
             int peso_original = g_original.gerar_grafo_aleatorio(n, n * 2);
 
-	   
+	    int quant_impares = (g_original.get_vertices_impares()).size();
+	    if(quant_impares == 0) {
+		i--; 
+		continue;
+	    }
             auto [tempo_g, custo_g] = Greedy(g_original);
             tempos_greedy[i] = tempo_g;
             custos_greedy[i] = peso_original+custo_g;
@@ -77,7 +81,7 @@ int main() {
     json_enum << "[\n";
     bool primeiro_registro_enum = true;
 
-    for(auto n: Testes_Enum) {
+    for(int n = 25; n <= 75; n+=25) {
         vector<double> tempos_enum(10);
         vector<int> custos_enum(10);
 
@@ -85,12 +89,12 @@ int main() {
             Grafo g_original(n, "grafo_aleatorio", false, true); 
             int peso_original = g_original.gerar_grafo_aleatorio(n, n * 2);
             
-            vector<int> impares = g_original.get_vertices_impares();
+            int quant_impares = (g_original.get_vertices_impares()).size();
             
-            if(impares.size() > MaxImpar) { 
-                i--; 
-                continue; 
-            }
+            if(quant_impares > MaxImpar || quant_impares == 0) { 
+		    i--; 
+		    continue;
+	    }
 
             auto [tempo_e, custo_e] = Enumeration(g_original);
             tempos_enum[i] = tempo_e;
