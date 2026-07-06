@@ -1,17 +1,33 @@
-# Compilador e flags
+# Nome do compilador
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude
+
+# Flags de otimização extrema e padrão do C++
+CXXFLAGS = -O3 -Wall -std=c++17
+
+# Lista de todos os arquivos fonte da pasta src automaticamente
+SRCS = $(wildcard src/*.cpp)
 
 # Nome do executável final
-TARGET = programa
+TARGET = carteiro_chines
 
-# Regra principal
+# Regra principal (o que roda ao digitar apenas 'make')
 all: $(TARGET)
 
-# Como construir o executável
-$(TARGET): src/main.cpp include/grafo.hpp
-	$(CXX) $(CXXFLAGS) src/main.cpp -o $(TARGET)
+# Como o executável deve ser construído
+$(TARGET): $(SRCS)
+	$(CXX) $(CXXFLAGS) $(SRCS) -o $(TARGET)
 
-# Regra para limpar os arquivos gerados (útil antes de subir pro GitHub)
+# Regra para compilar e imediatamente rodar os testes em C++
+run: $(TARGET)
+	./$(TARGET)
+
+# Regra para chamar o Python e gerar os gráficos
+plot:
+	python generate_graphs/main.py
+
+# Regra para rodar o ciclo completo: C++ gera os dados e Python plota
+pipeline: run plot
+
+# Limpa o executável para manter a pasta organizada
 clean:
 	rm -f $(TARGET)
