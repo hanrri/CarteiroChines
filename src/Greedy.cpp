@@ -1,4 +1,3 @@
-#include <bits/stdc++.h>
 #include <fstream>
 //inclui a biblioteca de grafos capada
 #include "../headers/Grafos.hpp"
@@ -17,7 +16,6 @@ pair<double, int> Greedy(Grafo g){
     vector<bool> pareados; //vetor de verificação dos vértices ímpares(se eles já foram "pareados")
     
     // VARIÁVEL PARA ACUMULAR O CUSTO TOTAL (Começa com o peso do grafo original)
-    // Nota: Se sua classe não tiver get_peso_total(), comece com 0 e mude a lógica do grafo.
     int custo_total = 0; 
 
     auto inicio = chrono::high_resolution_clock::now(); //lógica de tempo
@@ -25,8 +23,6 @@ pair<double, int> Greedy(Grafo g){
     //pegamos o vetor de vértices de grau ímpar
     vector<int> vertices_impares = g.get_vertices_impares();
 
-    //se o vertices_impares não estiver vazio, o grafo não é euleriano, segue a lógica
-    if(!vertices_impares.empty()){
         //guardamos o número de vértices em uma variável para facilitar as coisas
         int num_vertices = g.get_n_vertices()+1;
         
@@ -78,7 +74,6 @@ pair<double, int> Greedy(Grafo g){
                 }
             }
         }
-    }
 
     vector<int> ciclo = g.extrair_ciclo_euleriano(1);
     reverse(ciclo.begin(), ciclo.end());
