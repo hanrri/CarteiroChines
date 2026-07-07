@@ -4,7 +4,6 @@ from reg_super_fat.super_fat import regression
 from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy
-import os
 
 if __name__ == "__main__":
     
