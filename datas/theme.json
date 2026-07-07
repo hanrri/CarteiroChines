@@ -1,0 +1,17 @@
+{
+  "colors": {
+    "nn.json": "black",
+    "greedy.json": "green",
+    "enumeration.json": "red"
+  },
+  "labels_algorithm": {
+    "nn.json": "Vizinho Mais Próximo",
+    "greedy.json": "Heurística Gulosa",
+    "enumeration.json": "Enumeração Completa"
+  },
+  "labels": {
+    "title": "Algoritmos de heurística para o problema do carteiro chinês",
+    "x_label": "n (quantidade de vértices)",
+    "y_label": "t (tempo de processamento em ms)"
+  }
+}
